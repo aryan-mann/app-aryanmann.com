@@ -1,4 +1,5 @@
 <script>
+	import Disqus from '@components/Disqus.svelte';
 	import Meta from '@components/Meta.svelte';
 	import { alphabetize, convertToDate } from '@utils';
 
@@ -12,7 +13,7 @@
 
 <Meta {title} {date} />
 
-<div class="flex flex-col mt-8">
+<div class="flex flex-col mt-2 md:mt-8">
 	<div class="flex flex-col items-start">
 		<h1 class="text-3xl md:text-4xl">{title}</h1>
 	</div>
@@ -24,7 +25,7 @@
 				<a href={`/posts?series=${series}`}>'{alphabetize(series)}'</a>
 			</p>
 		{/if}
-		<p class="whitespace-nowrap">
+		<p class="mb-2">
 			Posted on {'   '}<span class="underline">{convertToDate(date)}</span>
 			{#if lastUpdated}
 				but last updated on <span class="underline">{convertToDate(lastUpdated)}</span>
@@ -47,12 +48,13 @@
 <div class="typo flex flex-col">
 	<slot />
 </div>
+<Disqus />
 <div class="mt-8 text-center text-gray-600">
 	For any criticism, kudos, or thoughts, shoot me a messsage at <a
 		href="mailto:aryan.21.mann@gmail.com">aryan.21.mann@gmail.com</a
 	>
 </div>
-<div class="flex justify-center mt-8 space-x-4 text-gray-600">
+<div class="flex justify-center mt-8 space-x-4 text-gray-600 mb-4">
 	<a class="thick-link" href="/">home</a>
 	<a class="thick-link" href="/posts">all posts</a>
 </div>

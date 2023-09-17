@@ -26,8 +26,7 @@ export const SiteData = {
 	menuLinks: [
 		{ label: 'home', url: '/' },
 		{ label: 'blog', url: '/posts' },
-		{ label: 'résumé (pdf)', url: '/resumes/AryanMann_Resume_Apr18.pdf' },
-		{ label: 'résumé (docx)', url: '/resumes/AryanMann_Resume_Apr18.docx' }
+		{ label: 'résumé', url: '/resumes/AryanMann_Resume_Apr28.pdf' },
 	],
 	portfolio: [
 		{

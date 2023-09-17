@@ -1,0 +1,169 @@
+---
+title: What is Babel?
+date: 2023-05-22
+lastUpdated: 2023-05-22
+tags:
+  - web
+  - babel
+part: 1
+series: what-is
+---
+
+Babel is a JavaScript compiler. Simply, it takes in JavaScript code (sort of) and spits out JavaScript code. Why would that be useful? Well, there are lots of different language specifications for what exactly is considered "JavaScript." Some specifications (such as ES6) allow for syntax which is not present in other/earlier specifications of JavaScript. For example, the following syntax is not understood by most JavaScript implementations before ES6.
+
+```js
+const hello = (say) => {
+    console.log(`I said: ${say}`);
+}
+```
+
+So Babel takes code written according to ECMAScript 2015+ specifications and "polyfills" them into older syntax so it is understandable by more JavaScript engines (think of this as essentially more browsers). For the above code, Babel would spit out something like this:
+
+```js
+function hello(say) {
+    console.log("I said: " + say);
+}
+```
+
+This allows you to use *newer* syntax and still have it cross-compile on older browsers. However, Babel does not limit itself to just the above (what we call "polyfills"). It can transpile new syntax (that you can even create yourself) and perform other transformations to your code. This is where the ecosystem of plugins for Babel comes in. To understand the ecosystem, let's take a look at how Babel works and how it utilizes plugins to add transformations to your code.
+
+## Plugins & How Babel Works
+
+Babel works by using a set of [plugins](https://babeljs.io/docs/en/plugins) to transform your JavaScript code. Plugins are the building blocks of Babel. They are small pieces of code that can be used to transform your JavaScript code. Plugins can be used to transpile new syntax, polyfill missing features, and perform other transformations on your code. Let's look at a few examples of plugins:
+
+### Plugin 1: `@babel/plugin-proposal-class-properties`
+
+Through this plugin, you can add support for class properties across JavaScript implementations that do not natively support it. Here's an example of class properties.
+
+```js
+class Cat {
+    // Instance properties
+    name = "sesame";
+    meow = () => {
+        console.log(`meow ${name}`)
+    };
+
+    // Static class-bound properties
+    static species = "Cat";
+    static meowmeow = () => {
+        console.log(`meow meow ${Cat.species}`);
+    };
+}
+```
+
+### Plugin 2: `babel-plugin-console-source`
+
+Plugins are not necessarily restricted to polyfills for older browsers. They can be used to add general functionality as well. Using this plugin, each time we use `console.log("abc")`, it will automatically prepend the file name, line number, and character number where the function was called; we end up actually calling `console.log("my-file.js (5, 12)", "abc")`.
+
+### Plugin 3: `babel-plugin-implicit-return`
+
+We can also add entirely new syntax to the language. With this plugin, the last statement automatically becomes a return statement. Make sure you take a second to understand the example; we will implement it later on!
+
+```js
+function double(x) {
+    // Instead of return 2 * x;
+    2 * x;
+}
+```
+
+### Abstract Syntax Trees
+
+The way plugins achieve these behaviors is by modifying the abstract syntax tree (AST) of a file. An AST is essentially a representation of your code where instead of thinking about the code as a bunch of singular characters, we can logically group them up. Take the following piece of code as an example.
+
+```js
+2 + (15 * 40)
+```
+
+In the context of ASTs, we can think of it as a Binary Expression (plus) where the left side is a Numeric Literal (2) and the right side is also a Binary Expression (multiply) where the left side is a Numeric Literal (15) and the right side is a Numeric Literal (40). Working with abstract syntax tree's is powerful since we can identify entities in the code on which we can operate.
+
+A simple and devious plugin might take in an AST, look for Binary Expression's with the operator plus (+) and swap them out with the operator multiply (*) and we would end up with the above code transformed automtically into:
+
+```js
+2 * (15 * 40)
+```
+
+Open a new browser tab to visit [lihautan.com/babel-ast-explorer](https://lihautan.com/babel-ast-explorer) - an AST explorer for JavaScript code, courtesy of Tan Li Hau. Play around with it to see how your code as text transforms into an abstract syntax tree. Get a sense of how it groups characters into logical entities.  
+
+## Creating a Custom Plugin
+
+I won't go too in-depth into the intricacies of creating a Babel plugin, however, let's learn enough to understand the entire workflow. Let's start with the absolute basic: a text file containing JavaScript code. To modify it in some sense, it's not a wise strategy to work with just the text file. Our modifications should be done on ASTs instead. So our workflow would look like:
+
+1. Turn the code into an AST that represents the code
+2. Find the right AST Node (such as a BinaryExpression, FunctionDeclaration, etc.) in the AST
+3. Modify the properties of a node or overwrite the node into a new type of node altogether
+4. Convert the AST into text code representing our final JavaScript code
+
+Luckily, the Babel plugin architecture is mature enough that we do not need to manually do Steps 1, 2 and 4 ourselves (unless you want to). All Babel plugins are specified in the `babel.config.js` file. To create your own plugin, all you need is a function that represents the plugin. You might want to turn it into a package and load it as a dependency, however for our example, that's not required.
+
+> Side Note: As an AST is a tree, Babel runs a Depth First Search to visit each node in the tree starting from the parent all the way down to it's children and it's children's children, etc. For Step 2, we use the Babel-provided way of hooking into this Depth First Search so instead of doing it ourselves, we can just ask Babel to let us know when it sees a certain type of AST Node.
+
+A Babel plugin is just a function that returns an object that specifies how we want to transform each type of AST Node. In it's simplest form, here's a Babel plugin that does absolutely nothing:
+
+```js
+export function nothingPlugin() {
+    return {
+
+    }
+}
+```
+
+For a more detailed step-by-step guide, check out the post "[Step-by-step guide for writing a custom babel transformation
+](https://lihautan.com/step-by-step-guide-for-writing-a-babel-transformation/)" by Tan Li Hau.
+
+## Implementing Plugin 3
+
+How could we code a plugin that mimics what Plugin 3 does? We could look for any `FunctionDeclaration` AST nodes in our AST, then traverse down the body into the last statement. If that statement is an `ExpressionStatement`, we can modify it to a `ReturnStatment` instead. Here's how that would look:
+
+```js
+export function myVeryOwnPlugin3() {
+    // We need this to create new AST nodes of the right type
+    const astNode = babel.types;
+
+    return {
+        // The visitor pattern takes care of Step 2 in the plugin creation process.
+        // In the example below, whenever Babel encounters a FunctionDeclaration node 
+        // during DFS, it calls the associated function to transform the node
+        visitor: {
+            FunctionDeclaration: function(path) {
+                // Get the body of a function declaration which is always a block i.e. the "{ .. }"
+                const blockStatement = path.get("body")
+                // Get all statements within that block body which will be an array of statements
+                const blockStatementBody = path.get("body");
+                // Get the last statement in the block body
+                const lastStatement = blockStatementBody[blockStatementBody.length - 1];
+                // Replace the last statement with a return statement that contains 
+                // whatever was inside the last statement
+                lastStatement.replaceWith(astNode.returnStatement(lastStatement.node.expression))
+            }
+        }
+    }
+}
+```
+
+There it is. Rust-style return statements implemented in JavaScript in under 10 lines of code. This implementation is not complete as there are edge cases where this would fail (such as an empty function declaration). It will also not work with functions declared with an arrow syntax as those fall into the `ArrowFunctionExpression` AST node type or functions assigned to a variable as those are of AST node type `FunctionExpression`. You can flesh out this example to work with those on your own. Nonetheless, we have a functioning and useful start to a plugin!
+
+We can use this plugin by adding it to our `babel.config.js`:
+
+```js
+import { myVeryOwnPlugin3 } from 'some-file.js';
+
+export default function (_) {
+    const presets = [ 
+        // ... 
+    ];
+    
+    const plugins = [ 
+        // ...
+        myVeryOwnPlugin3
+    ];
+
+    return {
+        presets,
+        plugins
+    };
+}
+```
+
+## Summarizing
+
+In summary, Babel is a JavaScript compiler which allows you to use or write plugins that take in JavaScript code and spit out JavaScript code. All plugins use an intermediate representation called an abstract syntax tree (AST) to do their transformation. These transformations can be used to add syntax to JavaScript, provide support for newer syntax to older JavaScript engines, and much more.

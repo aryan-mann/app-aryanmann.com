@@ -11,7 +11,7 @@
 		width={170}
 		height={72}
 	/>
-	<div class="flex flex-wrap pt-12 gap-4 items-start">
+	<div class="flex flex-wrap pt-8 md:pt-12 gap-4 justify-center">
 		{#each SiteData.menuLinks as menuLink}
 			<a class="thick-link" href={menuLink.url}>{menuLink.label}</a>
 		{/each}

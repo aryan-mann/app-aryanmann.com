@@ -5,23 +5,24 @@
 	import { SiteData } from '../site';
 	import Tagline from '@components/Tagline.svelte';
 	import MeImage from "@assets/images/me1.jpg";
+	import type { PageData } from './$types';
 	
 	let portfolioItem = SiteData.portfolio[0];
+	export let data: PageData;
 </script>
 
 <Meta title="Homepage" description="this website has stuff about me and the work ive done." />
 <!-- Hero -->
 <div class="flex flex-col items-center">
 	<div class="sm:flex-row flex flex-col items-center py-4 space-x-8">
-		<img alt="face of aryan mann" class="max-h-32 rounded-full shadow-xl" src={MeImage} />
+		<img alt="face of aryan mann" class="max-h-32 rounded-full shadow-xl animate-cool" src={MeImage} />
 		<h1 class="text-4xl">hey! i'm aryan.</h1>
 	</div>
 	<h3 class="py-2 text-xl text-center">this website has stuff about me and the work ive done.</h3>
 </div>
-<Tagline title="working on...">
-	currently im working on the{' '}<b>glTF</b> team at{' '}
-	<b>unity</b>, building tools and working with the
-	<a href="https://github.com/KhronosGroup/glTF">glTF</a> file format that powers digital twins at scale.
+<Tagline title="working on..." hasDog={true}>
+	currently im a part of the{' '}<a href='https://cohere.com/coral'>coral</a> team at{' '}<img class='inline h-4 w-4' alt='cohere logo' src='https://cohere.com/favicon.ico' />
+	<b>cohere</b>, working on figuring how to use large language models to build the next generation of user interfaces. i swear it's better ux than this.
 </Tagline>
 <!-- Socials -->
 <Socials />
@@ -39,7 +40,9 @@
 				target="_blank" rel="noreferrer"
 				>{portfolioItem.displayName || portfolioItem.website}</a
 			>
-			<img class="shadow w-full aspect-video" alt="" src={portfolioItem.image} />
+			<a href={`https://${portfolioItem.website}`}>
+				<img class="shadow w-full aspect-video cursor-pointer transform-gpu hover:-rotate-1 hover:shadow-md duration-200" alt="" src={portfolioItem.image} />
+			</a>
 			{#if portfolioItem.description}
 				<p class="mt-3">{portfolioItem.description}</p>
 			{/if}
@@ -53,7 +56,10 @@
 <div class="flex justify-center">
 	<ul class="max-w-screen-sm list-disc">
 		<li>
-			<b> july 2021 to present </b>{' '}
+			<b>july 2023 to present</b>{' '}– trying to make large language models useful to enterprises
+		</li>
+		<li>
+			<b>july 2021 to june 2023</b>{' '}
 			– working on enabling low-touch high-performance synthetic worlds that generate data for computer
 			vision models.. i.e.{' '}
 			<a href="https://github.com/Unity-Technologies/com.unity.perception">
@@ -70,32 +76,59 @@
 			information about alumni outcomes accessible to current students via an interactive React app
 		</li>
 		<li>
-			<div class="flex flex-col">
-				<b>april 2016 to june 2018</b> – worked on creating three beautiful websites via cutting
-				edge web technologies such as React, NextJs, and SSG
-				<ul class="inline-flex flex-col ml-8">
-					<li>
-						- <a href="https://amchemproducts.com">amchemproducts.com</a>
-					</li>
-					<li>
-						- <a href="https://drythane.com">drythane.com</a>
-					</li>
-					<li>
-						- <a href="https://amshield.com">amshield.com</a>
-					</li>
-				</ul>
-			</div>
+			<b>april 2016 to june 2018</b> – worked on creating three beautiful websites via cutting
+			edge web technologies such as React, NextJs, and SSG. 
+				(1) <a class='inline' href="https://amchemproducts.com">amchemproducts.com</a>
+				(2) <a class='inline' href="https://drythane.com">drythane.com</a>
+				(3) <a class='inline' href="https://amshield.com">amshield.com</a>
 		</li>
 		<li>
 			<b>1990s to april 2016</b> – ¯\_(ツ)_/¯
 		</li>
 	</ul>
 </div>
+
+{#if data.recentPosts}
+<!-- Latest Blog Post -->
+<h3 class="py-4 mt-8 text-xl">hot off the press</h3>
+<div class="flex flex-col gap-4 flex-wrap px-8 text-xl">
+	{#each data.recentPosts as recentPost}
+	<div class='flex gap-4 items-center'>
+			<span class="mr-2">📝✍🏽</span><a class="text-xl" href={recentPost.url}>{recentPost.title}</a>
+			<p class='text-md'>on {recentPost.date.toDateString()}</p>
+	</div>
+	{/each}
+</div>
+{/if}
+
 <!-- Fake Todo List -->
-<h3 class="py-4 mt-8 text-xl">todo list</h3>
+<h3 class="py-4 mt-4 text-xl">todo list</h3>
 <ul class="inline-flex flex-col ml-8 list-disc">
 	<li style="text-decoration: line-through;">add a post about something</li>
 	<li>add more detailed project breakdowns</li>
 	<li>add analytics to track your every movement muahaha</li>
 	<li>remove remaining capital letters</li>
 </ul>
+
+<style>
+	@keyframes spin {
+		from {
+			transform: rotate(0deg) scale(0.9);
+		}
+		25% {
+			transform: rotate(-10deg);
+		}
+		50% {
+			transform: rotate(0deg) scale(1.2);
+		}
+		75% {
+			transform: rotate(10deg);
+		}
+		to {
+			transform: rotate(0deg) scale(0.9);
+		}
+	}
+	.animate-cool {
+		animation: spin 8s cubic-bezier(0.755, 0.05, 0.855, 0.06) infinite;
+	}
+</style>

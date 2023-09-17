@@ -12,10 +12,10 @@
 </svelte:head>
 
 <div class="w-screen h-screen overflow-x-hidden">
-	<main class="md:py-16 xl:py-24 flex flex-col items-center justify-center px-8 pt-24 pb-6">
+	<main class="md:py-16 xl:py-24 flex flex-col items-center justify-center px-4 pt-12 pb-6">
 		<Navigation />
 		<!-- <MobileNavigation /> -->
-		<div class="w-full max-w-[800px] bg-white bg-opacity-80 px-4">
+		<div class="w-full max-w-[900px] bg-white bg-opacity-80 md:px-4">
 			<slot />
 		</div>
 	</main>
